@@ -13,6 +13,6 @@ A discord bot written in Python using discord.py
 
 # Getting started
 
-Install Python 3.10
-Edit the config.py
-Run `python main.py`
+- Install Python 3.10
+- Edit the config.py
+- Run `python main.py`
