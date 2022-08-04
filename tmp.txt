@@ -1,0 +1,5 @@
+Request:
+<urllib3.response.HTTPResponse object at 0x000002116C16F400>
+
+aiohttp:
+b''
