@@ -13,6 +13,9 @@ def cmp(first: int, second: int) -> bool | None:
     if first == 1 and second == 3:
         return False
 
+    if first == 3 and second == 1:
+        return True
+
     if first == second:
         return None
 
