@@ -193,6 +193,10 @@ class Sokoban(discord.ui.View):
                     self.board[self.playerPos] = Tiles.Space.value
                     self.playerPos = newPos
                     moved = True
+            case Tiles.Target:
+                self.board[newPos] = Tiles.Player.value
+                self.board[self.playerPos] = Tiles.Space.value
+                self.playerPos = newPos
 
         return moved
 
@@ -217,7 +221,10 @@ class Sokoban(discord.ui.View):
                     self.board[self.playerPos] = Tiles.Space.value
                     self.playerPos = newPos
                     moved = True
-
+            case Tiles.Target:
+                self.board[newPos] = Tiles.Player.value
+                self.board[self.playerPos] = Tiles.Space.value
+                self.playerPos = newPos
         return moved
 
     async def interaction_check(self, interaction: discord.Interaction) -> bool:
