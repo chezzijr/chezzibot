@@ -147,7 +147,7 @@ class Games(commands.Cog):
         t.rps `@ChezziBot`
         `@ChezziBot` rock
         """
-        if opponent is None:
+        if opponent is None or opponent == ctx.me:
             content = f"`{ctx.author.display_name}` vs `{self.bot.user.display_name}`"
             view = RPS(ctx, ctx.author)
         else:
