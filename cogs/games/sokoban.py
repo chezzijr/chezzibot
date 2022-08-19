@@ -15,7 +15,7 @@ class Tiles(IntEnum):
     BoxOnTarget = 5
 
     def __eq__(self, __o: int | Tiles) -> bool:
-        if isinstance(__o, int):
+        if isinstance(__o, (int, np.intc)):
             return self.value == __o
         if isinstance(__o, Tiles):
             return self.value == __o.value
@@ -165,10 +165,11 @@ class Sokoban(discord.ui.View):
 
     def move_diag(self, dx: int, dy: int) -> bool:
         dx *= self.cols
-        if (self.board[self.playerPos + dx] == Tiles.Space
-                or self.board[self.playerPos + dy] == Tiles.Space) \
-                and self.board[self.playerPos + dx + dy] == Tiles.Space:
-            self.swap(self.playerPos + dx + dy, self.playerPos)
+        if (self.board[self.playerPos + dx] in (Tiles.Space, Tiles.Target)
+                or self.board[self.playerPos + dy] in (Tiles.Space, Tiles.Target)) \
+                and self.board[self.playerPos + dx + dy] in (Tiles.Space, Tiles.Target):
+            self.board[self.playerPos] = Tiles.Space.value
+            self.board[self.playerPos + dx + dy] = Tiles.Player.value
             self.playerPos += dx + dy
             return True
         return False
@@ -182,17 +183,19 @@ class Sokoban(discord.ui.View):
                 self.playerPos = newPos
                 moved = True
             case Tiles.Box | Tiles.BoxOnTarget:
-                if self.board[newPos + dy] == Tiles.Space:
-                    self.swap(newPos + dy, newPos)
-                    self.swap(self.playerPos, newPos)
-                    self.playerPos = newPos
-                    moved = True
-                if self.board[newPos + dy] == Tiles.Target:
-                    self.board[newPos + dy] = Tiles.BoxOnTarget.value
-                    self.board[newPos] = Tiles.Player.value
-                    self.board[self.playerPos] = Tiles.Space.value
-                    self.playerPos = newPos
-                    moved = True
+                match self.board[newPos + dy]:
+                    case Tiles.Space:
+                        self.board[newPos + dy] = Tiles.Box.value
+                        self.board[newPos] = Tiles.Space.value
+                        self.swap(self.playerPos, newPos)
+                        self.playerPos = newPos
+                        moved = True
+                    case Tiles.Target:
+                        self.board[newPos + dy] = Tiles.BoxOnTarget.value
+                        self.board[newPos] = Tiles.Player.value
+                        self.board[self.playerPos] = Tiles.Space.value
+                        self.playerPos = newPos
+                        moved = True
             case Tiles.Target:
                 self.board[newPos] = Tiles.Player.value
                 self.board[self.playerPos] = Tiles.Space.value
@@ -210,17 +213,19 @@ class Sokoban(discord.ui.View):
                 self.playerPos = newPos
                 moved = True
             case Tiles.Box | Tiles.BoxOnTarget:
-                if self.board[newPos + dx] == Tiles.Space:
-                    self.swap(newPos + dx, newPos)
-                    self.swap(self.playerPos, newPos)
-                    self.playerPos = newPos
-                    moved = True
-                if self.board[newPos + dx] == Tiles.Target:
-                    self.board[newPos + dx] = Tiles.BoxOnTarget.value
-                    self.board[newPos] = Tiles.Player.value
-                    self.board[self.playerPos] = Tiles.Space.value
-                    self.playerPos = newPos
-                    moved = True
+                match self.board[newPos + dx]:
+                    case Tiles.Space:
+                        self.board[newPos + dx] = Tiles.Box.value
+                        self.board[newPos] = Tiles.Space.value
+                        self.swap(self.playerPos, newPos)
+                        self.playerPos = newPos
+                        moved = True
+                    case Tiles.Target:
+                        self.board[newPos + dx] = Tiles.BoxOnTarget.value
+                        self.board[newPos] = Tiles.Player.value
+                        self.board[self.playerPos] = Tiles.Space.value
+                        self.playerPos = newPos
+                        moved = True
             case Tiles.Target:
                 self.board[newPos] = Tiles.Player.value
                 self.board[self.playerPos] = Tiles.Space.value
