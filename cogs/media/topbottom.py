@@ -75,12 +75,12 @@ async def handle_image(
     # Write top text
     if top_text:
         image.write_text_box((margin, margin), top_text, width - 2 * margin,
-                             './assets/fonts/unicode.impact.ttf', place='center')
+                             './assets/fonts/unicode.impact.ttf', place='center', stroke=True)
 
     # Write bottom text
     if bottom_text:
         image.write_text_box((margin, margin), bottom_text, width - 2 * margin,
-                             './assets/fonts/unicode.impact.ttf', place='center', position='bottom')
+                             './assets/fonts/unicode.impact.ttf', place='center', position='bottom', stroke=True)
     with BytesIO() as image_binary:
         image.image.save(image_binary, format='PNG')
         image_binary.seek(0)
@@ -111,11 +111,11 @@ async def handle_gif(
 
         if top_text:
             fr.write_text_box((margin, margin), top_text, width -
-                              2 * margin, './assets/fonts/unicode.impact.ttf', top_font_size, place='center')
+                              2 * margin, './assets/fonts/unicode.impact.ttf', top_font_size, place='center', stroke=True)
 
         if bottom_text:
             fr.write_text_box((margin, margin), bottom_text, width -
-                              2 * margin, './assets/fonts/unicode.impact.ttf', bottom_font_size, place='center', position='bottom')
+                              2 * margin, './assets/fonts/unicode.impact.ttf', bottom_font_size, place='center', position='bottom', stroke=True)
 
         # https://github.com/python-pillow/Pillow/issues/3128
         b = BytesIO()

@@ -122,7 +122,7 @@ class ImageText(object):
             justify_last_line: bool = False,
             position: str = 'top',
             line_spacing: float = 1.1,
-            stroke_width: int = 1):
+            stroke: bool = False):
 
         x, y = xy
         lines = []
@@ -133,7 +133,7 @@ class ImageText(object):
             font_size = self.get_suitable_font_size(
                 text, box_width, font_filename, line_spacing)
 
-        stroke_width = font_size // 10
+        stroke_width = font_size // 20 if stroke else 0
 
         for word in words:
             new_line = ' '.join(line + [word])
