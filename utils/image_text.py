@@ -133,6 +133,8 @@ class ImageText(object):
             font_size = self.get_suitable_font_size(
                 text, box_width, font_filename, line_spacing)
 
+        stroke_width = font_size // 10
+
         for word in words:
             new_line = ' '.join(line + [word])
             size = self.get_text_size(font_filename, font_size, new_line)
