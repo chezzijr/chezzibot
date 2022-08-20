@@ -59,7 +59,7 @@ async def caption_image(ctx: commands.Context, image: Image.Image, width: int, h
         text, width - 2 * margin, font_name, fontsize) + 2 * margin + height
     img = ImageText((width, new_height), background=(255, 255, 255, 255))
     img.write_text_box((margin, margin), text, width - 2 * margin,
-                       font_name, fontsize, (0, 0, 0), 'center', stroke_width=0)
+                       font_name, fontsize, (0, 0, 0), 'center')
     img.image.paste(image, (0, new_height - height))
 
     with BytesIO() as img_binary:
@@ -80,7 +80,7 @@ async def caption_gif(ctx: commands.Context, gif: ImageSequence.Iterator, width:
         fr = ImageText((width, new_height), background=(255, 255, 255, 255))
 
         fr.write_text_box((margin, margin), text, width - 2 * margin,
-                          font_name, fontsize, (0, 0, 0), 'center', stroke_width=0)
+                          font_name, fontsize, (0, 0, 0), 'center')
         fr.image.paste(frame, (0, new_height - height))
 
         # https://github.com/python-pillow/Pillow/issues/3128
