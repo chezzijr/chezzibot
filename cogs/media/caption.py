@@ -53,7 +53,7 @@ def get_extended_height(
 async def caption_image(ctx: commands.Context, image: Image.Image, width: int, height: int, text: str):
     font_name = './assets/fonts/unicode.impact.ttf'
     fontsize = get_font_size(
-        text, height, 0.1, font_name)
+        text, width, height, 0.1, font_name)
     margin = min(width, height) // 30
     new_height = get_extended_height(
         text, width - 2 * margin, font_name, fontsize) + 2 * margin + height
