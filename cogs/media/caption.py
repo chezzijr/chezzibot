@@ -5,10 +5,10 @@ from utils import ImageText, reply
 from io import BytesIO
 
 
-def get_font_size(text: str, height: int, img_fraction: float, font_name: str) -> int:
+def get_font_size(text: str, width: int, height: int, img_fraction: float, font_name: str) -> int:
     fontsize = 8
     font = ImageFont.truetype(font_name, fontsize)
-    breakpoint = int(img_fraction * height)
+    breakpoint = int(img_fraction * min(height, (width + height) // 2))
     jumpsize = 64
     while True:
         if font.getsize(text)[1] < breakpoint:
@@ -71,7 +71,7 @@ async def caption_image(ctx: commands.Context, image: Image.Image, width: int, h
 async def caption_gif(ctx: commands.Context, gif: ImageSequence.Iterator, width: int, height: int, text: str):
     font_name = './assets/fonts/unicode.impact.ttf'
     fontsize = get_font_size(
-        text, height, 0.1, font_name)
+        text, width, height, 0.1, font_name)
     margin = min(width, height) // 30
     new_height = get_extended_height(
         text, width - 2 * margin, font_name, fontsize) + 2 * margin + height
@@ -92,6 +92,6 @@ async def caption_gif(ctx: commands.Context, gif: ImageSequence.Iterator, width:
 
     with BytesIO() as gif_binary:
         frames[0].save(gif_binary, format="GIF",
-                       save_all=True, append_images=frames[1:])
+                       save_all=True, append_images=frames[1:], loop=0)
         gif_binary.seek(0)
         return await reply(ctx.message, file=discord.File(fp=gif_binary, filename='unknown.gif'))

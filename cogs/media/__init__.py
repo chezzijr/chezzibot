@@ -22,7 +22,7 @@ class Media(commands.Cog):
         self.bot = bot
         self.visible = True
 
-    @commands.command(name="topbottom")
+    @commands.command(name="topbottom", aliases=["tb"])
     async def write_top_bottom_text(
             self,
             ctx: commands.Context,
@@ -46,7 +46,7 @@ class Media(commands.Cog):
 
         Aliases
         -------
-        topbottom
+        topbottom, tb
 
         Examples
         -------

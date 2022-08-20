@@ -99,7 +99,7 @@ async def handle_gif(
     top_font_size = None
     bottom_font_size = None
     for frame in gif:
-        fr = ImageText(frame)
+        fr = ImageText(frame.convert('RGBA'))
 
         if top_font_size is None and top_text:
             top_font_size = fr.get_suitable_font_size(
@@ -126,6 +126,6 @@ async def handle_gif(
 
     with BytesIO() as gif_binary:
         frames[0].save(gif_binary, format="GIF",
-                       save_all=True, append_images=frames[1:], optimize=False, duration=1)
+                       save_all=True, append_images=frames[1:], loop=0)
         gif_binary.seek(0)
         return await reply(ctx.message, file=discord.File(fp=gif_binary, filename='unknown.gif'))
