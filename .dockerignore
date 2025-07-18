@@ -1,4 +1,4 @@
 .venv
-.env
-logs/
+discord.log
 __pycache__/
+logs/

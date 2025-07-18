@@ -1,0 +1,34 @@
+services:
+  discordbot:
+    build: .
+    container_name: chezzibot
+    restart: unless-stopped
+    environment:
+      # Bot configuration
+      TOKEN: ${TOKEN}
+      OWNER: ${OWNER}
+      
+      # Optional environment variables
+      FFMPEG_PATH: ${FFMPEG_PATH:-ffmpeg}
+      LOG_LEVEL: ${LOG_LEVEL:-INFO}
+      
+      # Python configuration
+      PYTHONUNBUFFERED: 1
+      PYTHONDONTWRITEBYTECODE: 1
+
+    # Resource limits
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 512M
+        reservations:
+          cpus: '0.1'
+          memory: 128M
+    
+    # Logging configuration
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"

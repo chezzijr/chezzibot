@@ -17,8 +17,8 @@ class TopBottomFlags(commands.FlagConverter):
 
 def get_text_size(font_filename: str, font_size: int, text: str):
     font = PImgFont.truetype(font_filename, font_size)
-    return font.getsize(text)
-
+    bbox = font.getbbox(text)
+    return (bbox[2] - bbox[0], bbox[3] - bbox[1])
 
 def get_suitable_font_size(
         text: str,

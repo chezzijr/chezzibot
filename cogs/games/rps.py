@@ -1,100 +1,179 @@
+"""Enhanced Rock Paper Scissors game with better UX and error handling."""
+
 import discord
 import random
 from typing import Optional
+from logger import logger
 
-
-def cmp(first: int, second: int) -> bool | None:
+def compare_choices(first: int, second: int) -> Optional[bool]:
     """
-    Compare two choices if second beats first
-    1: rock
-    2: paper
-    3: scissor
+    Compare two choices to determine winner.
+    
+    Args:
+        first: First player's choice (1=rock, 2=paper, 3=scissors)
+        second: Second player's choice (1=rock, 2=paper, 3=scissors)
+        
+    Returns:
+        True if second beats first, False if first beats second, None if tie
     """
-    if first == 1 and second == 3:
-        return False
-
-    if first == 3 and second == 1:
-        return True
-
     if first == second:
         return None
+    
+    winning_combinations = {
+        (1, 2),  # Paper beats Rock
+        (2, 3),  # Scissors beats Paper
+        (3, 1),  # Rock beats Scissors
+    }
+    
+    return (first, second) in winning_combinations
 
-    return first < second
+def get_choice_name(choice: int) -> str:
+    """Get the display name for a choice."""
+    return {1: "🪨 Rock", 2: "📄 Paper", 3: "✂️ Scissors"}[choice]
 
-
-def name(choice: int) -> str:
-    match choice:
-        case 1:
-            return "Rock"
-        case 2:
-            return "Paper"
-        case 3:
-            return "Scissors"
-
+def get_choice_emoji(choice: int) -> str:
+    """Get the emoji for a choice."""
+    return {1: "🪨", 2: "📄", 3: "✂️"}[choice]
 
 class RPS(discord.ui.View):
+    """Rock Paper Scissors game view."""
+    
     def __init__(self, ctx, first: discord.Member, second: Optional[discord.Member] = None):
-        super().__init__()
+        super().__init__(timeout=180.0)
+        
+        self.ctx = ctx
+        self.players = [first, ctx.bot.user if second is None else second]
+        self.choices = [None, random.randint(1, 3) if second is None else None]
+        self.is_bot_game = second is None
+        
+        # Update button labels with emojis
+        self.children[0].emoji = "🪨"
+        self.children[1].emoji = "📄"
+        self.children[2].emoji = "✂️"
 
-        self.players = [
-            first, ctx.me] if second is None else [first, second]
-        self.choices = [
-            None, random.randint(1, 3)] if second is None else [
-            None, None]
+    def get_player_index(self, user: discord.User) -> int:
+        """Get the index of a player."""
+        try:
+            return self.players.index(user)
+        except ValueError:
+            return -1
 
-    def get_index(self, user):
-        return self.players.index(user)
-
-    async def endgame(self, i: discord.Interaction):
+    async def end_game(self, interaction: discord.Interaction):
+        """End the game and show results."""
         self.stop()
         for item in self.children:
             item.disabled = True
-        res = cmp(self.choices[0], self.choices[1])
-        if res is None:
-            return await i.response.edit_message(
-                content=f"It's a tie. Both chose **{name(self.choices[0])}**",
-                view=self)
-        if res:
-            w, l = self.players[1], self.players[0]
-            wc, lc = self.choices[1], self.choices[0]
+
+        result = compare_choices(self.choices[0], self.choices[1])
+        
+        embed = discord.Embed(
+            title="🎮 Rock Paper Scissors - Results",
+            color=discord.Color.green() if result is None else discord.Color.blue()
+        )
+        
+        # Show choices
+        embed.add_field(
+            name=f"{self.players[0].display_name}'s Choice",
+            value=get_choice_name(self.choices[0]),
+            inline=True
+        )
+        embed.add_field(
+            name=f"{self.players[1].display_name}'s Choice",
+            value=get_choice_name(self.choices[1]),
+            inline=True
+        )
+        
+        # Show result
+        if result is None:
+            embed.add_field(
+                name="Result",
+                value="🤝 It's a tie!",
+                inline=False
+            )
+        elif result:
+            winner = self.players[1]
+            embed.add_field(
+                name="Result",
+                value=f"🎉 **{winner.display_name}** wins!",
+                inline=False
+            )
         else:
-            w, l = self.players[0], self.players[1]
-            wc, lc = self.choices[0], self.choices[1]
+            winner = self.players[0]
+            embed.add_field(
+                name="Result",
+                value=f"🎉 **{winner.display_name}** wins!",
+                inline=False
+            )
 
-        await i.response.edit_message(
-            content=(f"`{w.display_name}` chose **{name(wc)}** and won, "
-                     f"`{l.display_name}` chose **{name(lc)}** and lost"),
-            view=self)
+        await interaction.response.edit_message(embed=embed, view=self)
 
-    @discord.ui.button(label="Rock", style=discord.ButtonStyle.blurple)
-    async def rock(self, i: discord.Interaction, btn: discord.Button):
-        idx = self.get_index(i.user)
-        self.choices[idx] = 1
+    async def make_choice(self, interaction: discord.Interaction, choice: int):
+        """Handle a player making a choice."""
+        player_index = self.get_player_index(interaction.user)
+        if player_index == -1:
+            await interaction.response.send_message(
+                "❌ You're not part of this game!", ephemeral=True
+            )
+            return
+        
+        self.choices[player_index] = choice
+        
+        if all(c is not None for c in self.choices):
+            await self.end_game(interaction)
+        else:
+            # Wait for other player
+            waiting_for = self.players[1 - player_index]
+            embed = discord.Embed(
+                title="🎮 Rock Paper Scissors",
+                description=f"**{self.players[0].display_name}** vs **{self.players[1].display_name}**",
+                color=discord.Color.orange()
+            )
+            embed.add_field(
+                name="Status",
+                value=f"Waiting for **{waiting_for.display_name}** to make their choice...",
+                inline=False
+            )
+            
+            await interaction.response.edit_message(embed=embed, view=self)
 
-        if all(self.choices):
-            return await self.endgame(i)
+    @discord.ui.button(label="Rock", style=discord.ButtonStyle.primary)
+    async def rock_button(self, interaction: discord.Interaction, button: discord.ui.Button):
+        """Handle rock choice."""
+        await self.make_choice(interaction, 1)
 
-        await i.response.defer()
-
-    @discord.ui.button(label="Paper", style=discord.ButtonStyle.gray)
-    async def paper(self, i: discord.Interaction, btn: discord.Button):
-        idx = self.get_index(i.user)
-        self.choices[idx] = 2
-
-        if all(self.choices):
-            return await self.endgame(i)
-
-        await i.response.defer()
+    @discord.ui.button(label="Paper", style=discord.ButtonStyle.secondary)
+    async def paper_button(self, interaction: discord.Interaction, button: discord.ui.Button):
+        """Handle paper choice."""
+        await self.make_choice(interaction, 2)
 
     @discord.ui.button(label="Scissors", style=discord.ButtonStyle.success)
-    async def scissors(self, i: discord.Interaction, btn: discord.Button):
-        idx = self.get_index(i.user)
-        self.choices[idx] = 3
+    async def scissors_button(self, interaction: discord.Interaction, button: discord.ui.Button):
+        """Handle scissors choice."""
+        await self.make_choice(interaction, 3)
 
-        if all(self.choices):
-            return await self.endgame(i)
+    async def interaction_check(self, interaction: discord.Interaction) -> bool:
+        """Check if the user can interact with this view."""
+        if interaction.user not in self.players:
+            await interaction.response.send_message(
+                "❌ You cannot play in this game!", ephemeral=True
+            )
+            return False
+        return True
 
-        await i.response.defer()
-
-    async def interaction_check(self, i: discord.Interaction) -> bool:
-        return i.user in self.players
+    async def on_timeout(self):
+        """Handle view timeout."""
+        for item in self.children:
+            item.disabled = True
+        
+        embed = discord.Embed(
+            title="🎮 Rock Paper Scissors - Timeout",
+            description="The game has timed out.",
+            color=discord.Color.red()
+        )
+        
+        try:
+            # Try to edit the message if possible
+            await self.ctx.edit_last_response(embed=embed, view=self)
+        except:
+            # If that fails, send a new message
+            await self.ctx.send(embed=embed, view=self)

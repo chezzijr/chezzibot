@@ -11,7 +11,9 @@ def get_font_size(text: str, width: int, height: int, img_fraction: float, font_
     breakpoint = int(img_fraction * min(height, (width + height) // 2))
     jumpsize = 64
     while True:
-        if font.getsize(text)[1] < breakpoint:
+        bbox = font.getbbox(text)
+        height = bbox[3] - bbox[1]
+        if height < breakpoint:
             fontsize += jumpsize
         else:
             jumpsize = jumpsize // 2
@@ -24,8 +26,8 @@ def get_font_size(text: str, width: int, height: int, img_fraction: float, font_
 
 def get_text_size(font_filename: str, font_size: int, text: str):
     font = ImageFont.truetype(font_filename, font_size)
-    return font.getsize(text)
-
+    bbox = font.getbbox(text)
+    return (bbox[2] - bbox[0], bbox[3] - bbox[1])
 
 def get_extended_height(
         text: str,
@@ -36,6 +38,7 @@ def get_extended_height(
     lines = []
     line = []
     words = text.split()
+    new_line = ''
     for word in words:
         new_line = ' '.join(line + [word])
         size = get_text_size(font_filename, font_size, new_line)

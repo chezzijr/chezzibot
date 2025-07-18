@@ -1,12 +1,17 @@
+"""Enhanced timeout view with better styling."""
+
 import discord
+from typing import Optional
 
-
-class Timeout(discord.ui.View):
-    def __init__(self):
-        super().__init__()
+class TimeoutView(discord.ui.View):
+    """A view that shows when something has timed out."""
+    
+    def __init__(self, message: Optional[str] = None):
+        super().__init__(timeout=None)  # This view doesn't timeout
+        
         self.add_item(discord.ui.Button(
-            style=discord.ButtonStyle.gray,
-            label="Timeout",
-            emoji="⚠",
+            style=discord.ButtonStyle.secondary,
+            label=message or "Timed Out",
+            emoji="⏰",
             disabled=True
         ))

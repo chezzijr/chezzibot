@@ -68,6 +68,7 @@ class SokobanButton(discord.ui.Button['Sokoban']):
         super().__init__(label=emoji, style=style, row=row, disabled=disabled)
 
     async def callback(self, interaction: discord.Interaction):
+        assert self.view
         board = self.view.board
         match self.label:
             case '↖':
@@ -87,7 +88,7 @@ class SokobanButton(discord.ui.Button['Sokoban']):
             case '➡':
                 self.view.move_horizontal(1)
             case '⛔':
-                self.view.children = []
+                self.view.children.clear()
                 self.view.stop()
             case '🔄':
                 self.view.load_level()
@@ -95,7 +96,7 @@ class SokobanButton(discord.ui.Button['Sokoban']):
                 self.view.level += 1
                 if self.view.level == len(self.view.Levels):
                     self.view.result = Result.Win
-                    self.view.children = []
+                    self.view.children.clear()
                     self.view.stop()
                 else:
                     self.view.load_level()

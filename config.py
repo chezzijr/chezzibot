@@ -1,39 +1,51 @@
-import json
+"""Configuration module for ChezziBot."""
 import os
 import discord
+from pathlib import Path
+from typing import Optional
 
+# Load environment variables in development
 if __debug__:
-    from dotenv import load_dotenv as _load_env
-    _load_env()
+    from dotenv import load_dotenv
+    load_dotenv()
 
+def get_required_env(key: str, error_msg: Optional[str] = None) -> str:
+    """Get a required environment variable or raise an error."""
+    value = os.getenv(key)
+    if value is None:
+        raise ValueError(error_msg or f"Missing required environment variable: {key}")
+    return value
 
-def _try_load(map, key, msg=None):
-    val = map.get(key)
-    if val is None:
-        if msg is None:
-            msg = f"No key named {key} in {map}"
-        raise ValueError(msg)
-    return val
+# Bot configuration
+TOKEN = get_required_env("TOKEN", "Bot token is required")
+OWNER_ID = int(get_required_env("OWNER", "Owner ID is required"))
+DEFAULT_PREFIX = "t."
+VERSION = "2.0.0"
 
+# File paths
+BASE_DIR = Path(__file__).parent
+ASSETS_DIR = BASE_DIR / "assets"
+FONTS_DIR = ASSETS_DIR / "fonts"
+JSONS_DIR = ASSETS_DIR / "jsons"
 
-# Load from environment variables
-TOKEN: str = _try_load(os.environ, "TOKEN")
-OWNER: str = _try_load(os.environ, 'OWNER')
+# External tools
+FFMPEG_PATH = os.getenv("FFMPEG_PATH", "ffmpeg")
 
-DEFAULT_PREFIX: str = "t."
-VERSION: str = "0.1.0"
-
-# If ffmpeg is in environment variable
-# Else you can specify your own ffmpeg executable path
-FFMPEG_PATH: str = "ffmpeg"
-
-# Intents configs
-INTENTS = discord.Intents.all()
-INTENTS.presences = False
+# Discord configuration
+INTENTS = discord.Intents.default()
+INTENTS.message_content = True
+INTENTS.guilds = True
+INTENTS.guild_messages = True
 INTENTS.members = False
+INTENTS.presences = False
 
-# Embed configs
+# Bot settings
 MAX_FIELDS_PER_EMBED = 10
+COMMAND_TIMEOUT = 300.0  # 5 minutes
+MAX_MESSAGE_LENGTH = 2000
 
-# Logger config
-DPY_LOGGING = True
+# Logging configuration
+LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO")
+ENABLE_DPY_LOGGING = True
+LOG_FORMAT = "[%(asctime)s] [%(name)s:%(funcName)s:%(lineno)d] %(levelname)s %(message)s"
+LOG_DATE_FORMAT = "%Y-%m-%d %H:%M:%S"
