@@ -32,29 +32,15 @@ class Games(commands.Cog, name="Games"):
         """
         try:
             view = Sokoban(ctx.author)
-            embed = discord.Embed(
-                title="🎮 Sokoban",
-                description="Use the arrow buttons to move and push boxes to the red targets!",
-                color=discord.Color.blue()
-            )
-            embed.add_field(
-                name="Controls",
-                value="🔄 Restart • ⛔ Stop • ⏩ Next Level",
-                inline=False
-            )
-            embed.add_field(
-                name="Board",
-                value=f"```\n{view.render_board()}\n```",
-                inline=False
-            )
             
-            message = await safe_send(ctx, embed=embed, view=view)
+            message = await safe_send(ctx, content=view.render_board(), view=view)
+            assert message
             await view.wait()
             
             # Handle timeout
             if view.is_finished() and hasattr(view, 'result') and view.result.value == 0:
                 timeout_view = TimeoutView()
-                await message.edit(embed=embed, view=timeout_view)
+                await message.edit(content=view.render_board(), view=timeout_view)
                 
         except Exception as e:
             logger.error(f"Error in sokoban command: {e}")
