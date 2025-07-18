@@ -15,6 +15,8 @@ services:
       # Python configuration
       PYTHONUNBUFFERED: 1
       PYTHONDONTWRITEBYTECODE: 1
+    volumes:
+      - ./:/app
 
     # Resource limits
     deploy:
